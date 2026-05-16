@@ -1,0 +1,440 @@
+const talksData = [
+    {
+        title: "Introduction to Generative AI",
+        speakers: ["Dr. Ada Lovelace"],
+        category: ["AI", "Machine Learning"],
+        duration: 60, // minutes
+        description: "An overview of generative AI models, their applications, and future potential."
+    },
+    {
+        title: "Advanced React Patterns",
+        speakers: ["John Doe", "Jane Smith"],
+        category: ["Frontend", "React", "Web Development"],
+        duration: 60,
+        description: "Explore advanced patterns and best practices for building scalable React applications."
+    },
+    {
+        title: "Cloud Native Architectures with Kubernetes",
+        speakers: ["Alice Johnson"],
+        category: ["Cloud", "DevOps", "Kubernetes"],
+        duration: 60,
+        description: "A deep dive into designing and deploying applications on Kubernetes in a cloud-native environment."
+    },
+    {
+        title: "Securing Your Node.js APIs",
+        speakers: ["Bob Williams"],
+        category: ["Backend", "Security", "Node.js"],
+        duration: 60,
+        description: "Learn essential security practices to protect your Node.js APIs from common vulnerabilities."
+    },
+    {
+        title: "Data Visualization with D3.js",
+        speakers: ["Charlie Brown"],
+        category: ["Frontend", "Data Visualization"],
+        duration: 60,
+        description: "Master the art of creating interactive data visualizations using the D3.js library."
+    },
+    {
+        title: "Getting Started with WebAssembly",
+        speakers: ["Diana Prince"],
+        category: ["Web Development", "Performance"],
+        duration: 60,
+        description: "An introduction to WebAssembly and how it can boost the performance of web applications."
+    }
+];
+
+// Define a unique placeholder for backticks
+const BACKTICK_PLACEHOLDER = '__BACKTICK__';
+
+const jsContentTemplate = `
+const talksData = ${JSON.stringify(talksData, null, 4)};
+
+const eventStartTime = 10 * 60; // 10:00 AM in minutes from midnight
+const transitionDuration = 10; // minutes
+const lunchBreakDuration = 60; // minutes
+
+function formatTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+    return ${BACKTICK_PLACEHOLDER}\${displayHours}:\${mins.toString().padStart(2, '0')} \${ampm}${BACKTICK_PLACEHOLDER};
+}
+
+function generateSchedule(filteredTalks = talksData) {
+    const scheduleContainer = document.getElementById('schedule-container');
+    scheduleContainer.innerHTML = ''; // Clear previous schedule
+
+    if (filteredTalks.length === 0) {
+        scheduleContainer.innerHTML = '<p class="no-results">No talks found matching your search criteria.</p>';
+        return;
+    }
+
+    let currentTime = eventStartTime; // Start at 10:00 AM
+    let talkCount = 0;
+
+    const renderCard = (type, data) => {
+        const card = document.createElement('div');
+        card.classList.add(type === 'talk' ? 'talk-card' : 'break-card');
+
+        if (type === 'talk') {
+            const talkEndTime = currentTime + data.duration;
+            card.innerHTML = ${BACKTICK_PLACEHOLDER}
+                <span class="time">\${formatTime(currentTime)} - \${formatTime(talkEndTime)}</span>
+                <h2>\${data.title}</h2>
+                <p class="speakers">\${data.speakers.join(' and ')}</p>
+                <p class="category">Category: \${data.category.join(', ')}</p>
+                <p class="description">\${data.description}</p>
+            ${BACKTICK_PLACEHOLDER};
+            scheduleContainer.appendChild(card);
+            currentTime = talkEndTime + transitionDuration;
+        } else { // break
+            const breakEndTime = currentTime + data.duration;
+            card.innerHTML = ${BACKTICK_PLACEHOLDER}
+                <span>\${formatTime(currentTime)} - \${formatTime(breakEndTime)}</span>
+                <span>\${data.title}</span>
+            ${BACKTICK_PLACEHOLDER};
+            scheduleContainer.appendChild(card);
+            currentTime = breakEndTime;
+        }
+    };
+
+    filteredTalks.forEach((talk) => {
+        if (talkCount === 3) {
+            renderCard('break', { title: 'Lunch Break', duration: lunchBreakDuration });
+        }
+        renderCard('talk', talk);
+        talkCount++;
+    });
+}
+
+const searchInput = document.getElementById('categorySearch');
+const searchButton = document.getElementById('searchButton');
+const resetButton = document.getElementById('resetButton');
+
+searchButton.addEventListener('click', () => {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    if (searchTerm) {
+        const filtered = talksData.filter(talk =>
+            talk.category.some(cat => cat.toLowerCase().includes(searchTerm))
+        );
+        generateSchedule(filtered);
+    } else {
+        generateSchedule(talksData);
+    }
+});
+
+resetButton.addEventListener('click', () => {
+    searchInput.value = '';
+    generateSchedule(talksData);
+});
+
+generateSchedule();
+`; // End of jsContentTemplate string
+
+// Now, replace the placeholder with actual backticks
+const jsContent = jsContentTemplate.replace(new RegExp(BACKTICK_PLACEHOLDER, 'g'), '`');
+
+const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Talks Event</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+        .search-container input[type="text"] {
+            padding: 12px 15px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            outline: none;
+        }
+        .search-container button {
+            padding: 12px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .search-container button:hover {
+            background-color: #2980b9;
+        }
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .talk-card, .break-card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+        .talk-card:hover {
+            transform: translateY(-5px);
+        }
+        .talk-card h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        .talk-card .time {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .talk-card .speakers {
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+        .talk-card .category {
+            font-size: 0.85em;
+            color: #27ae60;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        .talk-card .description {
+            font-size: 0.9em;
+            color: #555;
+        }
+        .break-card {
+            background-color: #ecf0f1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #2c3e50;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: 1px dashed #bdc3c7;
+        }
+        .break-card span {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .no-results {
+            text-align: center;
+            font-size: 1.2em;
+            color: #7f8c8d;
+            grid-column: 1 / -1; /* Span all columns */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Technical Talks Event</h1>
+    </header>
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="categorySearch" placeholder="Search by category (e.g., AI, Frontend)">
+            <button id="searchButton">Search</button>
+            <button id="resetButton">Reset</button>
+        </div>
+        <div id="schedule-container" class="schedule-grid">
+            <!-- Schedule will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <script>
+        const talksData = [
+    {
+        "title": "Introduction to Generative AI",
+        "speakers": [
+            "Dr. Ada Lovelace"
+        ],
+        "category": [
+            "AI",
+            "Machine Learning"
+        ],
+        "duration": 60,
+        "description": "An overview of generative AI models, their applications, and future potential."
+    },
+    {
+        "title": "Advanced React Patterns",
+        "speakers": [
+            "John Doe",
+            "Jane Smith"
+        ],
+        "category": [
+            "Frontend",
+            "React",
+            "Web Development"
+        ],
+        "duration": 60,
+        "description": "Explore advanced patterns and best practices for building scalable React applications."
+    },
+    {
+        "title": "Cloud Native Architectures with Kubernetes",
+        "speakers": [
+            "Alice Johnson"
+        ],
+        "category": [
+            "Cloud",
+            "DevOps",
+            "Kubernetes"
+        ],
+        "duration": 60,
+        "description": "A deep dive into designing and deploying applications on Kubernetes in a cloud-native environment."
+    },
+    {
+        "title": "Securing Your Node.js APIs",
+        "speakers": [
+            "Bob Williams"
+        ],
+        "category": [
+            "Backend",
+            "Security",
+            "Node.js"
+        ],
+        "duration": 60,
+        "description": "Learn essential security practices to protect your Node.js APIs from common vulnerabilities."
+    },
+    {
+        "title": "Data Visualization with D3.js",
+        "speakers": [
+            "Charlie Brown"
+        ],
+        "category": [
+            "Frontend",
+            "Data Visualization"
+        ],
+        "duration": 60,
+        "description": "Master the art of creating interactive data visualizations using the D3.js library."
+    },
+    {
+        "title": "Getting Started with WebAssembly",
+        "speakers": [
+            "Diana Prince"
+        ],
+        "category": [
+            "Web Development",
+            "Performance"
+        ],
+        "duration": 60,
+        "description": "An introduction to WebAssembly and how it can boost the performance of web applications."
+    }
+];
+
+const eventStartTime = 10 * 60; // 10:00 AM in minutes from midnight
+const transitionDuration = 10; // minutes
+const lunchBreakDuration = 60; // minutes
+
+function formatTime(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+    return `${displayHours}:${mins.toString().padStart(2, '0')} ${ampm}`;
+}
+
+function generateSchedule(filteredTalks = talksData) {
+    const scheduleContainer = document.getElementById('schedule-container');
+    scheduleContainer.innerHTML = ''; // Clear previous schedule
+
+    if (filteredTalks.length === 0) {
+        scheduleContainer.innerHTML = '<p class="no-results">No talks found matching your search criteria.</p>';
+        return;
+    }
+
+    let currentTime = eventStartTime; // Start at 10:00 AM
+    let talkCount = 0;
+
+    const renderCard = (type, data) => {
+        const card = document.createElement('div');
+        card.classList.add(type === 'talk' ? 'talk-card' : 'break-card');
+
+        if (type === 'talk') {
+            const talkEndTime = currentTime + data.duration;
+            card.innerHTML = `
+                <span class="time">${formatTime(currentTime)} - ${formatTime(talkEndTime)}</span>
+                <h2>${data.title}</h2>
+                <p class="speakers">${data.speakers.join(' and ')}</p>
+                <p class="category">Category: ${data.category.join(', ')}</p>
+                <p class="description">${data.description}</p>
+            `;
+            scheduleContainer.appendChild(card);
+            currentTime = talkEndTime + transitionDuration;
+        } else { // break
+            const breakEndTime = currentTime + data.duration;
+            card.innerHTML = `
+                <span>${formatTime(currentTime)} - ${formatTime(breakEndTime)}</span>
+                <span>${data.title}</span>
+            `;
+            scheduleContainer.appendChild(card);
+            currentTime = breakEndTime;
+        }
+    };
+
+    filteredTalks.forEach((talk) => {
+        if (talkCount === 3) {
+            renderCard('break', { title: 'Lunch Break', duration: lunchBreakDuration });
+        }
+        renderCard('talk', talk);
+        talkCount++;
+    });
+}
+
+const searchInput = document.getElementById('categorySearch');
+const searchButton = document.getElementById('searchButton');
+const resetButton = document.getElementById('resetButton');
+
+searchButton.addEventListener('click', () => {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    if (searchTerm) {
+        const filtered = talksData.filter(talk =>
+            talk.category.some(cat => cat.toLowerCase().includes(searchTerm))
+        );
+        generateSchedule(filtered);
+    } else {
+        generateSchedule(talksData);
+    }
+});
+
+resetButton.addEventListener('click', () => {
+    searchInput.value = '';
+    generateSchedule(talksData);
+});
+
+generateSchedule();
+    </script>
+</body>
+</html>
